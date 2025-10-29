@@ -1,6 +1,10 @@
 numpy
 pandas
-matplotlib
 seaborn
+matplotlib
 scikit-learn
+xgboost
+optuna
+causalml
+dython
 openpyxl
