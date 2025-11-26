@@ -115,11 +115,29 @@ class OncologyPredictor:
         plt.show()
 
 
-# --- EXAMPLE USAGE ---
+def prescribe_treatment(system, patient):
+    """
+    Generate all analysis and SHAP values.
+    """
+    print("\n--- 1. Análise de Risco ---")
+    risk = system.predict_risk(patient)
+    print(f"Classificação: {risk["classification"]}")
+    print(f"Probabilidade de Sobrevivência (Atual): {risk["survival_probability"]:.2%}")
+
+    print("\n--- 2. Simulação de Tratamento ---")
+    recommendations = system.prescribe_treatment(patient)
+
+    pd.options.display.float_format = "{:.2%}".format
+    print(recommendations.to_string(index=False))
+
+    print("\n--- 3. Explicação Visual (SHAP) ---")
+    system.explain_with_shap(patient)
+
+
 if __name__ == "__main__":
     system = OncologyPredictor("model_package.joblib")
 
-    new_patient = {
+    patient = {
         "diagnosis_age": 42,
         "lymph_nodes": 4,
         "malignant_tumors": 3,
@@ -141,16 +159,4 @@ if __name__ == "__main__":
         "vital_status_5y": "Alive",
     }
 
-    print("\n--- 1. Análise de Risco ---")
-    risk = system.predict_risk(new_patient)
-    print(f"Classificação: {risk["classification"]}")
-    print(f"Probabilidade de Sobrevivência (Atual): {risk["survival_probability"]:.2%}")
-
-    print("\n--- 2. Simulação de Tratamento ---")
-    recommendations = system.prescribe_treatment(new_patient)
-
-    pd.options.display.float_format = "{:.2%}".format
-    print(recommendations.to_string(index=False))
-
-    print("\n--- 3. Explicação Visual (SHAP) ---")
-    system.explain_with_shap(new_patient)
+    prescribe_treatment(system, patient)

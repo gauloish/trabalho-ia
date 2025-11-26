@@ -24,20 +24,18 @@ pip install -r requirements.txt
 ## ▶️ Como Usar
 
 ### 1. Executar o Script Principal
-Para treinar o modelo, avaliar a performance e gerar exemplos de prescrição, execute:
+Para gerar a previsão de sobrevivência, a prescrição de tratamento e os gráficos de explicação do SHAP para uma amostra de paciente, basta executar:
 
 ```bash
 python treatment_prescription.py
 ```
 
 Isso irá:
-- Carregar os dados de `datasets/dataset.xlsx`.
-- Treinar o modelo.
-- Exibir a Acurácia e AUC no terminal.
-- Mostrar prescrições para 5 pacientes aleatórios.
-- Gerar dois arquivos de imagem:
-    - `shap_summary.png`: Importância global das variáveis.
-    - `shap_patient_explanation.png`: Explicação detalhada para um paciente.
+- Carregar o modelo `model_package.joblib`.
+- Mostrar a classificação do paciente (`ALTO RISCO` ou `Baixo Risco`).
+- Mostrar a probabilidade de sobrevivência do paciente.
+- Mostrar as estimativas para cada cenário de tratamento.
+- Gerar o gráfico com os valores SHAP do modelo para o paciente.
 
 ### 2. Testar em Qualquer Paciente (Novos Dados)
 Para usar o modelo em novos pacientes, você pode importar a função `prescribe_treatment` no seu próprio script ou notebook.
@@ -45,46 +43,46 @@ Para usar o modelo em novos pacientes, você pode importar a função `prescribe
 Exemplo de uso:
 
 ```python
-import pandas as pd
-from treatment_prescription import load_and_clean_data, train_model, prescribe_treatment
+from treatment_prescription import OncologyPredictor
 
-# 1. Carregar dados e treinar o modelo (ou carregar um modelo salvo)
-df = load_and_clean_data("datasets/dataset.xlsx")
-model, feature_cols, label_encoders, _, _ = train_model(df)
+# 1. Carregar o modelo salvo
+system = OncologyPredictor("model_package.joblib")
 
-# 2. Criar dados de um novo paciente (exemplo)
-# Certifique-se de usar as mesmas colunas e codificações usadas no treinamento
-novo_paciente = {
-    "diagnosis_age": 55,
-    "lymph_nodes": 2,
-    "malignant_tumors": 1,
-    "tumor_size": 25,
-    "nodes_examined": 10,
-    "diagnosis_year": 2015,
-    "estrogen_info": "Positive", # Precisa ser codificado numericamente como no treino
+# 2. Inserir dados do novo paciente
+patient = {
+    "diagnosis_age": 42,
+    "lymph_nodes": 4,
+    "malignant_tumors": 3,
+    "radiation_type": "Beam radiation",
+    "chemotherapy_done": 1,
+    "radiation_sequence": "Intraoperative rad with other rad before/after surgery",
+    "estrogen_info": "Positive",
     "progesterone_info": "Positive",
-    # ... adicione todas as features necessárias
+    "tumor_size": "105",
+    "her2_info": "Positive",
+    "nodes_examined": 15,
+    "cause_of_death": "Alive",
+    "race": "White",
+    "sex": "Female",
+    "vital_status": "Alive",
+    "diagnosis_year": 2010,
+    "treatment_year": 2016,
+    "num_screening": 4,
+    "vital_status_5y": "Alive",
 }
 
-# Nota: Para simplificar, recomenda-se passar um DataFrame com a estrutura correta
-# ou reutilizar uma linha do dataset original para teste.
-
-# Exemplo pegando um paciente do dataset original:
-paciente_teste = df.iloc[[0]][feature_cols] 
-
 # 3. Gerar Prescrição
-resultado = prescribe_treatment(model, paciente_teste, feature_cols)
-print(resultado)
+prescribe_treatment(system, patient)
 ```
 
 ## 📊 Entendendo os Resultados
 
-A função de prescrição retorna uma tabela com:
-- **Best_Treatment**: O tratamento recomendado (ex: "Radiotherapy Only").
-- **Max_Survival_Prob**: A probabilidade estimada de sobrevivência com o melhor tratamento.
-- **Prob_No_Tx, Prob_Chemo, etc.**: As probabilidades calculadas para cada opção de tratamento.
+A função de prescrição retorna os dados:
+- **Classificação**: A classificação de risco do paciente ("ALTO RISCO" ou "Baixo Risco).
+- **Probabilidade de Sobrevivência**: A probabilidade estimada de sobrevivência atual.
+- **Estimativa de Sobrevivência com os Tratamentos**: As probabilidades calculadas para cada opção de tratamento.
 
 ## 🔍 Explicabilidade
 O script gera automaticamente:
-- **SHAP Summary Plot**: Mostra quais características (ex: idade, tamanho do tumor) mais impactam a sobrevivência geral.
-- **Waterfall Plot**: Mostra passo-a-passo como o modelo chegou à probabilidade de sobrevivência para um paciente específico.
+
+- **Gráfico SHAP**: Mostra quais características (ex: idade, tamanho do tumor) mais impactam a sobrevivência geral.
