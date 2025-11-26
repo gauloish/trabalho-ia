@@ -19,8 +19,6 @@ Certifique-se de ter o Python instalado. Instale as dependências necessárias:
 pip install -r requirements.txt
 ```
 
-*Nota: Este projeto utiliza `xgboost==2.0.3` para compatibilidade com o SHAP.*
-
 ## ▶️ Como Usar
 
 ### 1. Executar o Script Principal
